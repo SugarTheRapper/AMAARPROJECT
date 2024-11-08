@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat and Photo Gallery</title>
+    <style>
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Centering the main container */
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Common header styling */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Login screen styling */
+        #login-screen {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        /* Styling for "Join the Chat Room" */
+        #login-screen h2 {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            background: linear-gradient(90deg, #3498db, #9b59b6);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #login-screen input, #login-screen button {
+            padding: 10px;
+            margin: 10px;
+            width: 200px;
+        }
+
+        #login-screen button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        #login-screen button:hover {
+            background-color: #555;
+        }
+
+        /* Chat screen styling */
+        #chat-screen {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            max-height: 90vh;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            margin-bottom: 20px;
+        }
+
+        #chat-area {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .message-box {
+            display: flex;
+            padding: 10px;
+        }
+
+        .message-box input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .message-box button {
+            background-color: #333;
+            color: #fff;
+            padding: 8px;
+            border: none;
+            margin-left: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Message styling */
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            background-color: #e0e0e0;
+        }
+
+        /* User and system message styling with color coding */
+        .user-message {
+            color: #333;
+        }
+
+        .other-message {
+            color: #555;
+        }
+
+        /* Typing indicator styling */
+        #typing-indicator {
+            font-size: 12px;
+            color: #555;
+            padding: 5px;
+        }
+
+        /* Gallery section styling */
+        #photo-gallery {
+            width: 90%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #category-filter {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        #category-filter button {
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #category-filter button:hover {
+            background-color: #555;
+        }
+
+        /* Gallery grid */
+        #gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .image {
+            width: 150px;
+            height: 100px;
+            cursor: pointer;
+            transition: transform 0.3s, opacity 0.3s ease;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Zoom effect on hover */
+        .image:hover {
+            transform: scale(1.1);
+        }
+
+        /* Lightbox styles */
+        #lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #lightbox-img {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 8px;
+        }
+
+        /* Lightbox navigation */
+        #prev, #next {
+            color: white;
+            font-size: 30px;
+            position: absolute;
+            top: 50%;
+            cursor: pointer;
+            user-select: none;
+            padding: 10px;
+        }
+
+        #prev { left: 10px; }
+        #next { right: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Chat Application Section -->
+    <div id="login-screen">
+        <h2>Join the Chat Room</h2>
+        <input type="text" id="username" placeholder="Enter your nickname" required>
+        <button onclick="joinChat()">Join Chat</button>
+    </div>
+
+    <!-- Additional sections like Chat and Gallery here -->
+
+</body>
+</html>
+
+
+    <div id="chat-screen" style="display: none;">
+        <header>
+            <h2>Chat Room</h2>
+        </header>
+        <div id="chat-area"></div>
+        <div id="typing-indicator"></div>
+        <div class="message-box">
+            <input type="text" id="message-input" placeholder="Type a message" oninput="showTypingIndicator()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <!-- Emoji Picker Section -->
+        <div id="emoji-picker">
+            <button onclick="addEmoji('😊')">😊</button>
+            <button onclick="addEmoji('😂')">😂</button>
+            <button onclick="addEmoji('👍')">👍</button>
+            <button onclick="addEmoji('❤️')">❤️</button>
+            <button onclick="addEmoji('🎉')">🎉</button>
+        </div>
+    </div>
+
+    <!-- Photo Gallery Section -->
+    <section id="photo-gallery">
+        <header>
+            <h2>Interactive Photo Gallery</h2>
+            <div id="category-filter">
+                <button onclick="filterImages('all')">All</button>
+                <button onclick="filterImages('nature')">Nature</button>
+                <button onclick="filterImages('city')">City</button>
+                <button onclick="filterImages('people')">People</button>
+            </div>
+        </header>
+        
+        <div id="gallery">
+            <!-- Example images for demonstration -->
+            <img src="https://plus.unsplash.com/premium_photo-1673292293042-cafd9c8a3ab3?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="image nature" onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=1888&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="image city" onclick="openLightbox(this)">
+            <img src="https://media.istockphoto.com/id/1977348709/photo/laughing-young-businesswoman-talking-with-colleagues-in-an-office-hallway.jpg?s=1024x1024&w=is&k=20&c=jCROHhInM_uoa55qB6VkOaVnjeqI5zlGXDJ5hNMD46A=" class="image people" onclick="openLightbox(this)">
+            <img src="https://images.unsplash.com/photo-1472396961693-142e6e269027?q=80&w=1904&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="image nature" onclick="openLightbox(this)">
+        </div>
+        
+        <!-- Lightbox Modal -->
+        <div id="lightbox" onclick="closeLightbox()">
+            <span id="prev" onclick="changeImage(-1)">&#10094;</span>
+            <img id="lightbox-img">
+            <span id="next" onclick="changeImage(1)">&#10095;</span>
+        </div>
+    </section>
+
+    <script>
+        // Chat Application Functionality
+        let username = '';
+        let typingTimeout;
+        const colors = ["#3498db", "#e74c3c", "#2ecc71", "#9b59b6"]; // Array for user color-coding
+        let userColor;
+
+        function joinChat() {
+            const input = document.getElementById('username');
+            username = input.value.trim();
+            if (username) {
+                userColor = colors[Math.floor(Math.random() * colors.length)];
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('chat-screen').style.display = 'flex';
+                addMessage('System', `${username} has joined the chat`);
+            }
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessage(username, message, true);
+                messageInput.value = '';
+            }
+        }
+
+        function addMessage(sender, message, isUser = false) {
+            const chatArea = document.getElementById('chat-area');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', isUser ? 'user-message' : 'other-message');
+            if (isUser) messageDiv.style.color = userColor;
+            messageDiv.innerHTML = `${sender}: ${message}`;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            indicator.textContent = `${username} is typing...`;
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                indicator.textContent = '';
+            }, 1000);
+        }
+
+        function addEmoji(emoji) {
+            const messageInput = document.getElementById('message-input');
+            messageInput.value += emoji;
+            messageInput.focus();
+        }
+
+        // Photo Gallery Functionality
+        let currentImageIndex;
+        let images = document.querySelectorAll('.image');
+
+        function filterImages(category) {
+            images.forEach(img => {
+                img.style.opacity = '0';
+                setTimeout(() => {
+                    if (category === 'all' || img.classList.contains(category)) {
+                        img.style.display = 'inline-block';
+                        setTimeout(() => img.style.opacity = '1', 100);
+                    } else {
+                        img.style.display = 'none';
+                    }
+                }, 100);
+            });
+        }
+
+        function openLightbox(element) {
+            currentImageIndex = Array.from(images).indexOf(element);
+            updateLightboxImage();
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        function changeImage(direction) {
+            currentImageIndex = (currentImageIndex + direction + images.length) % images.length;
+            updateLightboxImage();
+        }
+
+        function updateLightboxImage() {
+            document.getElementById('lightbox-img').src = images[currentImageIndex].src;
+        }
+    </script>
+</body>
+</html>
